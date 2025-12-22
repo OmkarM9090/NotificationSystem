@@ -1,68 +1,192 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* ================== Global Styles ================== */
+* {
+  @apply transition-colors duration-300;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  @apply font-sans antialiased m-0;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* ================== Dark Mode ================== */
+html.dark {
+  color-scheme: dark;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
+html {
+  color-scheme: light;
 }
-button:hover {
-  border-color: #646cff;
+
+/* ================== Custom Animations ================== */
+@keyframes blob {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
 }
-button:focus,
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+/* ================== Scrollbar Styling ================== */
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #9333ea #f3f4f6;
+}
+
+/* Chrome, Edge, Safari */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #9333ea;
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #7e22ce;
+}
+
+/* Dark mode scrollbar */
+html.dark *::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+html.dark *::-webkit-scrollbar-thumb {
+  background: #9333ea;
+}
+
+html.dark *::-webkit-scrollbar-thumb:hover {
+  background: #a855f7;
+}
+
+/* ================== Form Elements ================== */
+@layer components {
+  .input-base {
+    @apply px-4 py-3 rounded-lg border transition-all focus:outline-none focus:ring-2 focus:ring-purple-500/50;
+  }
+
+  .btn-base {
+    @apply font-semibold transition-all transform hover:scale-105 active:scale-95 rounded-lg;
+  }
+
+  .btn-primary {
+    @apply btn-base bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:shadow-lg;
+  }
+
+  .btn-secondary {
+    @apply btn-base bg-gray-200 text-gray-900 hover:bg-gray-300;
+  }
+
+  .card-base {
+    @apply rounded-lg border transition-all;
+  }
+}
+
+/* ================== Responsive Typography ================== */
+@layer components {
+  .h1-responsive {
+    @apply text-3xl md:text-4xl lg:text-5xl font-bold;
+  }
+
+  .h2-responsive {
+    @apply text-2xl md:text-3xl lg:text-4xl font-bold;
+  }
+
+  .h3-responsive {
+    @apply text-xl md:text-2xl lg:text-3xl font-bold;
+  }
+}
+
+/* ================== Utility Classes ================== */
+.truncate-lines-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.truncate-lines-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.glass-effect {
+  @apply backdrop-blur-lg bg-white/10 border border-white/20;
+}
+
+.glass-effect-dark {
+  @apply backdrop-blur-lg bg-gray-800/50 border border-gray-700;
+}
+
+/* ================== Button Focus States ================== */
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  @apply outline-none ring-2 ring-purple-500/50;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* ================== Link Styles ================== */
+a {
+  @apply text-purple-600 hover:text-purple-700 transition-colors;
+}
+
+html.dark a {
+  @apply text-purple-400 hover:text-purple-300;
+}
+
+/* ================== Responsive Container ================== */
+@layer components {
+  .container-responsive {
+    @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
   }
-  a:hover {
-    color: #747bff;
+}
+
+/* ================== Loading Animation ================== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-  button {
-    background-color: #f9f9f9;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* ================== Selection Color ================== */
+::selection {
+  @apply bg-purple-500 text-white;
+}
+
+html.dark ::selection {
+  @apply bg-purple-600 text-white;
 }

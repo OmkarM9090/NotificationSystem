@@ -8,6 +8,7 @@ import { Server } from "socket.io";
 import Notification from "./models/Notification.js";
 import authRoutes from "./routes/authRoutes.js";
 import User from "./models/User.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use("/api/auth", authRoutes);
 app.get("/", (req, res) => {
   res.send("Notification Backend Running");
 });
+app.use("/api/notifications", notificationRoutes);
 
 /* -------------------- DATABASE -------------------- */
 mongoose
@@ -103,19 +105,59 @@ io.on("connection", (socket) => {
   });
 
   /* ---------------- USER NOTIFICATION ---------------- */
-  socket.on("sendUserNotification", async ({ title, message, userId }) => {
+  socket.on("sendUserNotification", async ({ title, message, userIdentifier }) => {
     if (socket.user.role !== "admin") return;
 
-    const notification = await Notification.create({
-      title,
-      message,
-      type: "user",
-      targetUser: userId
-    });
+    // Normalize and validate identifier
+    const identifier = (userIdentifier || "").trim();
+    if (!identifier) {
+      socket.emit("notificationError", { message: "❌ Please provide an email, username, or user ID" });
+      return;
+    }
 
-    io.to(userId).emit("receiveNotification", notification);
+    // Escape regex for safe case-insensitive name match
+    const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    try {
+      const searchQueries = [
+        { email: identifier.toLowerCase() },
+        { email: identifier },
+        { name: identifier },
+        { name: new RegExp(`^${escapeRegex(identifier)}$`, "i") }
+      ];
+
+      // If identifier looks like an ObjectId, try that too
+      if (mongoose.isValidObjectId(identifier)) {
+        searchQueries.unshift({ _id: identifier });
+      }
+
+      const targetUser = await User.findOne({ $or: searchQueries });
+
+      if (!targetUser) {
+        socket.emit("notificationError", {
+          message: `❌ User not found: ${identifier}`
+        });
+        return;
+      }
+
+      const notification = await Notification.create({
+        title,
+        message,
+        type: "user",
+        targetUser: targetUser._id
+      });
+
+      io.to(targetUser._id.toString()).emit("receiveNotification", notification);
+      socket.emit("notificationSuccess", {
+        message: `✅ Notification sent to ${targetUser.name}`
+      });
+    } catch (error) {
+      socket.emit("notificationError", {
+        message: `❌ Error: ${error.message}`
+      });
+    }
   });
-  
+
   socket.on("disconnect", () => {
     console.log("Socket disconnected:", socket.user.email);
   });
